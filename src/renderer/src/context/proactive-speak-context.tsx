@@ -14,6 +14,7 @@ interface ProactiveSpeakSettings {
 interface ProactiveSpeakContextType {
   settings: ProactiveSpeakSettings
   updateSettings: (newSettings: ProactiveSpeakSettings) => void
+  restartIdleTimer: () => void  // Added "restartIdleTimer" for Random Proactive Prompt.
 }
 
 const defaultSettings: ProactiveSpeakSettings = {
@@ -75,7 +76,8 @@ export function ProactiveSpeakProvider({ children }: { children: ReactNode }) {
   const contextValue = useMemo(() => ({
     settings,
     updateSettings,
-  }), [settings, updateSettings]);
+    restartIdleTimer: startIdleTimer,                 // Added "restartIdleTimer" for Random Proactive Prompt.
+  }), [settings, updateSettings, startIdleTimer]);    // Added "start"IdleTimer" for Random Proactive Prompt.
 
   return (
     <ProactiveSpeakContext.Provider value={contextValue}>
