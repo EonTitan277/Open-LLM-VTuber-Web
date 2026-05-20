@@ -4,7 +4,6 @@ import { useMicToggle } from "./use-mic-toggle";
 import { useLive2DConfig } from "@/context/live2d-config-context";
 import { useSwitchCharacter } from "@/hooks/utils/use-switch-character";
 import { useForceIgnoreMouse } from "@/hooks/utils/use-force-ignore-mouse";
-import { useMode } from "@/context/mode-context";
 
 export function useIpcHandlers() {
   const { handleMicToggle } = useMicToggle();
@@ -12,8 +11,6 @@ export function useIpcHandlers() {
   const { modelInfo, setModelInfo } = useLive2DConfig();
   const { switchCharacter } = useSwitchCharacter();
   const { setForceIgnoreMouse } = useForceIgnoreMouse();
-  const { mode } = useMode();
-  const isPet = mode === 'pet';
 
   const micToggleHandler = useCallback(() => {
     handleMicToggle();
@@ -55,7 +52,6 @@ export function useIpcHandlers() {
 
   useEffect(() => {
     if (!window.electron?.ipcRenderer) return;
-    if (!isPet) return;
 
     window.electron.ipcRenderer.removeAllListeners("mic-toggle");
     window.electron.ipcRenderer.removeAllListeners("interrupt");
@@ -97,6 +93,5 @@ export function useIpcHandlers() {
     switchCharacterHandler,
     toggleForceIgnoreMouseHandler,
     forceIgnoreMouseChangedHandler,
-    isPet,
   ]);
 }

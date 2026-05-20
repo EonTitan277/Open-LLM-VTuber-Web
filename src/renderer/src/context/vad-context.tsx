@@ -38,8 +38,14 @@ interface VADState {
   /** Microphone active state */
   micOn: boolean;
 
+  /** Whether microphone listening is allowed */
+  listeningAllowed: boolean;
+
   /** Set microphone state */
   setMicOn: (value: boolean) => void;
+
+  /** Set microphone listening permission */
+  setListeningAllowed: (value: boolean) => void;
 
   /** Set Auto stop mic state */
   setAutoStopMic: (value: boolean) => void;
@@ -89,6 +95,7 @@ const DEFAULT_VAD_STATE = {
   autoStopMic: false,
   autoStartMicOn: false,
   autoStartMicOnConvEnd: false,
+  listeningAllowed: true,
 };
 
 /**
@@ -112,7 +119,10 @@ export function VADProvider({ children }: { children: React.ReactNode }) {
 
   // Persistent state management
   const [micOn, setMicOn] = useLocalStorage('micOn', DEFAULT_VAD_STATE.micOn);
-  const autoStopMicRef = useRef(true);
+  const [listeningAllowed, setListeningAllowedState] = useLocalStorage(
+    'listeningAllowed',
+    DEFAULT_VAD_STATE.listeningAllowed,
+  );
   const [autoStopMic, setAutoStopMicState] = useLocalStorage(
     'autoStopMic',
     DEFAULT_VAD_STATE.autoStopMic,
@@ -125,12 +135,15 @@ export function VADProvider({ children }: { children: React.ReactNode }) {
     'autoStartMicOn',
     DEFAULT_VAD_STATE.autoStartMicOn,
   );
-  const autoStartMicRef = useRef(false);
   const [autoStartMicOnConvEnd, setAutoStartMicOnConvEndState] = useLocalStorage(
     'autoStartMicOnConvEnd',
     DEFAULT_VAD_STATE.autoStartMicOnConvEnd,
   );
-  const autoStartMicOnConvEndRef = useRef(false);
+  const listeningAllowedRef = useRef(listeningAllowed);
+  const backendListeningAllowedRef = useRef(true);
+  const autoStopMicRef = useRef(autoStopMic);
+  const autoStartMicRef = useRef(autoStartMicOn);
+  const autoStartMicOnConvEndRef = useRef(autoStartMicOnConvEnd);
 
   // Force update mechanism for ref updates
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -173,15 +186,19 @@ export function VADProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     autoStopMicRef.current = autoStopMic;
-  }, []);
+  }, [autoStopMic]);
 
   useEffect(() => {
     autoStartMicRef.current = autoStartMicOn;
-  }, []);
+  }, [autoStartMicOn]);
 
   useEffect(() => {
     autoStartMicOnConvEndRef.current = autoStartMicOnConvEnd;
-  }, []);
+  }, [autoStartMicOnConvEnd]);
+
+  useEffect(() => {
+    listeningAllowedRef.current = listeningAllowed;
+  }, [listeningAllowed]);
 
   /**
    * Update previous triggered probability and force re-render
@@ -300,6 +317,11 @@ export function VADProvider({ children }: { children: React.ReactNode }) {
    */
   const startMic = useCallback(async () => {
     try {
+      if (!listeningAllowedRef.current || !backendListeningAllowedRef.current) {
+        console.log('Skipping VAD start because listening is disabled');
+        return;
+      }
+
       if (!vadRef.current) {
         console.log('Initializing VAD');
         await initVAD();
@@ -336,6 +358,12 @@ export function VADProvider({ children }: { children: React.ReactNode }) {
     isProcessingRef.current = false;
   }, []);
 
+  const setListeningAllowed = useCallback((value: boolean) => {
+    listeningAllowedRef.current = value;
+    setListeningAllowedState(value);
+    forceUpdate();
+  }, []);
+
   /**
    * Set Auto stop mic state
    */
@@ -362,7 +390,9 @@ export function VADProvider({ children }: { children: React.ReactNode }) {
     () => ({
       autoStopMic: autoStopMicRef.current,
       micOn,
+      listeningAllowed,
       setMicOn,
+      setListeningAllowed,
       setAutoStopMic,
       startMic,
       stopMic,
@@ -377,10 +407,12 @@ export function VADProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       micOn,
+      listeningAllowed,
       startMic,
       stopMic,
       settings,
       updateSettings,
+      setListeningAllowed,
     ],
   );
 

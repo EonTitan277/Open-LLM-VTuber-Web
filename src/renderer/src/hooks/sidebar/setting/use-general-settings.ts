@@ -8,6 +8,10 @@ import { useCamera } from '@/context/camera-context';
 import { useSwitchCharacter } from '@/hooks/utils/use-switch-character';
 import { useConfig } from '@/context/character-config-context';
 import i18n from 'i18next';
+import {
+  MIC_TOGGLE_SHORTCUT_KEY,
+  loadInitialMicShortcut,
+} from './shortcut-utils';
 
 export const IMAGE_COMPRESSION_QUALITY_KEY = 'appImageCompressionQuality';
 export const DEFAULT_IMAGE_COMPRESSION_QUALITY = 0.8;
@@ -26,6 +30,7 @@ interface GeneralSettings {
   showSubtitle: boolean
   imageCompressionQuality: number;
   imageMaxWidth: number;
+  micShortcut: string;
 }
 
 interface UseGeneralSettingsProps {
@@ -106,6 +111,7 @@ export const useGeneralSettings = ({
     showSubtitle,
     imageCompressionQuality: loadInitialCompressionQuality(),
     imageMaxWidth: loadInitialImageMaxWidth(),
+    micShortcut: loadInitialMicShortcut(),
   };
 
   const [settings, setSettings] = useState<GeneralSettings>(initialSettings);
@@ -130,6 +136,13 @@ export const useGeneralSettings = ({
     }
     localStorage.setItem(IMAGE_COMPRESSION_QUALITY_KEY, settings.imageCompressionQuality.toString());
     localStorage.setItem(IMAGE_MAX_WIDTH_KEY, settings.imageMaxWidth.toString());
+    localStorage.setItem(MIC_TOGGLE_SHORTCUT_KEY, settings.micShortcut);
+    const registrationPromise = window.api?.registerMicShortcut?.(settings.micShortcut);
+    if (registrationPromise) {
+      void registrationPromise.catch((error: unknown) => {
+        console.error('Failed to register mic shortcut:', error);
+      });
+    }
   }, [settings, bgUrlContext, baseUrl, onWsUrlChange, onBaseUrlChange, setShowSubtitle]);
 
   useEffect(() => {
@@ -256,5 +269,6 @@ export const useGeneralSettings = ({
     handleCharacterPresetChange,
     showSubtitle,
     setShowSubtitle,
+    micShortcut: settings.micShortcut,
   };
 };

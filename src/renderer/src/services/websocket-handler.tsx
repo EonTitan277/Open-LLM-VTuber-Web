@@ -37,7 +37,12 @@ function WebSocketHandler({ children }: { children: React.ReactNode }) {
   const { confUid, setConfName, setConfUid, setConfigFiles } = useConfig();
   const [pendingModelInfo, setPendingModelInfo] = useState<ModelInfo | undefined>(undefined);
   const { setSelfUid, setGroupMembers, setIsOwner } = useGroup();
-  const { startMic, stopMic, autoStartMicOnConvEnd } = useVAD();
+  const {
+    startMic,
+    stopMic,
+    autoStartMicOnConvEnd,
+    listeningAllowed,
+  } = useVAD();
   const autoStartMicOnConvEndRef = useRef(autoStartMicOnConvEnd);
   const { interrupt } = useInterrupt();
   const { setBrowserViewData } = useBrowser();
@@ -78,7 +83,7 @@ function WebSocketHandler({ children }: { children: React.ReactNode }) {
           setAiState((currentState: AiState) => {
             if (currentState === 'thinking-speaking') {
               // Auto start mic if enabled
-              if (autoStartMicOnConvEndRef.current) {
+              if (autoStartMicOnConvEndRef.current && listeningAllowed) {
                 startMic();
               }
               return 'idle';
@@ -91,7 +96,7 @@ function WebSocketHandler({ children }: { children: React.ReactNode }) {
       default:
         console.warn('Unknown control command:', controlText);
     }
-  }, [setAiState, clearResponse, setForceNewMessage, startMic, stopMic]);
+  }, [setAiState, clearResponse, setForceNewMessage, startMic, stopMic, listeningAllowed]);
 
   const handleWebSocketMessage = useCallback((message: MessageEvent) => {
     console.log('Received message from server:', message);

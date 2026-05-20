@@ -1,4 +1,5 @@
 /* eslint-disable react/require-default-props */
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useState } from 'react';
 import {
   Text, Input, NumberInput, createListCollection, Flex, Box,
@@ -15,6 +16,7 @@ import {
   SelectValueText,
 } from '@/components/ui/select';
 import { settingStyles } from './setting-styles';
+import { getShortcutFromKeyboardEvent } from '@/hooks/sidebar/setting/shortcut-utils';
 
 // Help Icon Component
 interface HelpIconProps {
@@ -81,6 +83,14 @@ interface SwitchFieldProps {
 }
 
 interface InputFieldProps {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  help?: string
+}
+
+interface ShortcutFieldProps {
   label: string
   value: string
   onChange: (value: string) => void
@@ -203,6 +213,50 @@ export function InputField({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+      />
+    </Field>
+  );
+}
+
+export function ShortcutField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  help,
+}: ShortcutFieldProps): JSX.Element {
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.key === 'Escape' || event.key === 'Backspace' || event.key === 'Delete') {
+      onChange('');
+      return;
+    }
+
+    const shortcut = getShortcutFromKeyboardEvent(event);
+    if (shortcut) {
+      onChange(shortcut);
+    }
+  };
+
+  return (
+    <Field
+      {...settingStyles.general.field}
+      label={
+        <Flex align="center">
+          <Text {...settingStyles.general.field.label}>{label}</Text>
+          {help && <HelpIcon content={help} />}
+        </Flex>
+      }
+    >
+      <Input
+        {...settingStyles.general.input}
+        placeholder={placeholder}
+        value={value}
+        readOnly
+        cursor="text"
+        onKeyDown={handleKeyDown}
       />
     </Field>
   );

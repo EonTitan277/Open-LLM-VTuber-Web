@@ -36,6 +36,8 @@ const api = {
     ipcRenderer.on('mic-toggle', handler);
     return () => ipcRenderer.removeListener('mic-toggle', handler);
   },
+  registerMicShortcut: (shortcut: string) => ipcRenderer.invoke('register-mic-shortcut', shortcut),
+  unregisterMicShortcut: () => ipcRenderer.invoke('unregister-mic-shortcut'),
   onInterrupt: (callback: () => void) => {
     const handler = (_event: any) => callback();
     ipcRenderer.on('interrupt', handler);

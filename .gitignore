@@ -1,3 +1,6 @@
+# ignore AI generated plans
+*plan.md
+
 # Logs
 logs
 *.log

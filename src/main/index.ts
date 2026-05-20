@@ -1,5 +1,5 @@
 /* eslint-disable no-shadow */
-import { app, ipcMain, globalShortcut, desktopCapturer } from "electron";
+import { app, ipcMain, globalShortcut, desktopCapturer, BrowserWindow } from "electron";
 import { electronApp, optimizer } from "@electron-toolkit/utils";
 import { WindowManager } from "./window-manager";
 import { MenuManager } from "./menu-manager";
@@ -7,6 +7,56 @@ import { MenuManager } from "./menu-manager";
 let windowManager: WindowManager;
 let menuManager: MenuManager;
 let isQuitting = false;
+let registeredMicShortcut = '';
+
+function sendMicToggleToRenderer(): void {
+  const window = windowManager.getWindow();
+  if (window) {
+    window.webContents.send('mic-toggle');
+    return;
+  }
+
+  const windows = BrowserWindow.getAllWindows();
+  windows.forEach((browserWindow) => {
+    browserWindow.webContents.send('mic-toggle');
+  });
+}
+
+function registerMicShortcut(shortcut: string): boolean {
+  const nextShortcut = shortcut.trim();
+  const previousShortcut = registeredMicShortcut;
+
+  if (nextShortcut === previousShortcut) {
+    return true;
+  }
+
+  if (previousShortcut) {
+    globalShortcut.unregister(previousShortcut);
+  }
+
+  registeredMicShortcut = '';
+
+  if (!nextShortcut) {
+    return true;
+  }
+
+  const registered = globalShortcut.register(nextShortcut, sendMicToggleToRenderer);
+  if (registered) {
+    registeredMicShortcut = nextShortcut;
+    return true;
+  }
+
+  console.warn(`Failed to register mic shortcut: ${nextShortcut}`);
+
+  if (previousShortcut) {
+    const restored = globalShortcut.register(previousShortcut, sendMicToggleToRenderer);
+    if (restored) {
+      registeredMicShortcut = previousShortcut;
+    }
+  }
+
+  return false;
+}
 
 function setupIPC(): void {
   ipcMain.handle("get-platform", () => process.platform);
@@ -70,6 +120,17 @@ function setupIPC(): void {
   ipcMain.handle('get-screen-capture', async () => {
     const sources = await desktopCapturer.getSources({ types: ['screen'] });
     return sources[0].id;
+  });
+
+  ipcMain.handle('register-mic-shortcut', (_event, shortcut: string) => {
+    return registerMicShortcut(shortcut);
+  });
+
+  ipcMain.handle('unregister-mic-shortcut', () => {
+    if (registeredMicShortcut) {
+      globalShortcut.unregister(registeredMicShortcut);
+      registeredMicShortcut = '';
+    }
   });
 }
 

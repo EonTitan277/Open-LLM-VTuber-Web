@@ -10,6 +10,8 @@ declare global {
       onModeChanged: (callback: (mode: 'pet' | 'window') => void) => void
       showContextMenu: (x: number, y: number) => void
       onMicToggle: (callback: () => void) => void
+      registerMicShortcut: (shortcut: string) => Promise<boolean>
+      unregisterMicShortcut: () => Promise<void>
       onInterrupt: (callback: () => void) => void
       updateComponentHover: (componentId: string, isHovering: boolean) => void
       onToggleInputSubtitle: (callback: () => void) => void

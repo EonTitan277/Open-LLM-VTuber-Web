@@ -6,7 +6,7 @@ import { settingStyles } from "./setting-styles";
 import { useConfig } from "@/context/character-config-context";
 import { useGeneralSettings } from "@/hooks/sidebar/setting/use-general-settings";
 import { useWebSocket } from "@/context/websocket-context";
-import { SelectField, SwitchField, InputField } from "./common";
+import { SelectField, ShortcutField, SwitchField, InputField } from "./common";
 
 interface GeneralProps {
   onSave?: (callback: () => void) => () => void;
@@ -61,6 +61,7 @@ function General({ onSave, onCancel }: GeneralProps): JSX.Element {
     handleCharacterPresetChange,
     showSubtitle,
     setShowSubtitle,
+    micShortcut,
   } = useGeneralSettings({
     bgUrlContext,
     confName,
@@ -97,6 +98,14 @@ function General({ onSave, onCancel }: GeneralProps): JSX.Element {
         label={t("settings.general.showSubtitle")}
         checked={showSubtitle}
         onChange={setShowSubtitle}
+      />
+
+      <ShortcutField
+        label={t("settings.general.micShortcut")}
+        value={micShortcut}
+        onChange={(value) => handleSettingChange("micShortcut", value)}
+        placeholder={t("settings.general.micShortcutPlaceholder")}
+        help={t("settings.general.micShortcutHelp")}
       />
 
       {!settings.useCameraBackground && (
