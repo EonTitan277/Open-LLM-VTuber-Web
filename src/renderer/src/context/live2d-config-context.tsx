@@ -2,7 +2,6 @@ import {
   createContext, useContext, useState, useMemo,
 } from 'react';
 import { useLocalStorage } from '@/hooks/utils/use-local-storage';
-import { useConfig } from '@/context/character-config-context';
 
 /**
  * Model emotion mapping interface
@@ -71,6 +70,12 @@ export interface ModelInfo {
 
   /** Initial scale */
   initialScale?: number;
+
+  /** Backing canvas render scale relative to device pixel ratio */
+  renderScale?: number;
+
+  /** Maximum Live2D refresh rate */
+  frameRateLimit?: number;
 }
 
 /**
@@ -90,6 +95,8 @@ interface Live2DConfigState {
 const DEFAULT_CONFIG = {
   modelInfo: {
     scrollToResize: true,
+    renderScale: 1,
+    frameRateLimit: 60,
   } as ModelInfo | undefined,
   isLoading: false,
 };
@@ -105,8 +112,6 @@ export const Live2DConfigContext = createContext<Live2DConfigState | null>(null)
  * @param {React.ReactNode} props.children - Child components
  */
 export function Live2DConfigProvider({ children }: { children: React.ReactNode }) {
-  const { confUid } = useConfig();
-
   const [isLoading, setIsLoading] = useState(DEFAULT_CONFIG.isLoading);
 
   const [modelInfo, setModelInfoState] = useLocalStorage<ModelInfo | undefined>(
@@ -140,6 +145,14 @@ export function Live2DConfigProvider({ children }: { children: React.ReactNode }
         "scrollToResize" in info
           ? info.scrollToResize
           : (modelInfo?.scrollToResize ?? true),
+      renderScale:
+        "renderScale" in info
+          ? info.renderScale
+          : (modelInfo?.renderScale ?? 1),
+      frameRateLimit:
+        "frameRateLimit" in info
+          ? info.frameRateLimit
+          : (modelInfo?.frameRateLimit ?? 60),
     });
   };
 

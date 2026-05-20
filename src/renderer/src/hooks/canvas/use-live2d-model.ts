@@ -113,6 +113,10 @@ export const useLive2DModel = ({
     const currentUrl = modelInfo?.url;
     const sdkScale = (window as any).LAppDefine?.CurrentKScale;
     const modelScale = modelInfo?.kScale !== undefined ? Number(modelInfo.kScale) : undefined;
+    const performanceConfig = {
+      renderScale: modelInfo?.renderScale,
+      limitedFrameRate: modelInfo?.frameRateLimit,
+    };
 
     const needsUpdate = currentUrl &&
                         (currentUrl !== prevModelUrlRef.current ||
@@ -120,25 +124,35 @@ export const useLive2DModel = ({
 
     if (needsUpdate) {
       prevModelUrlRef.current = currentUrl;
+    }
 
-      try {
+    try {
+      if (currentUrl) {
         const { baseUrl, modelDir, modelFileName } = parseModelUrl(currentUrl);
 
         if (baseUrl && modelDir) {
-          updateModelConfig(baseUrl, modelDir, modelFileName, Number(modelInfo.kScale));
+          updateModelConfig(
+            baseUrl,
+            modelDir,
+            modelFileName,
+            Number(modelInfo?.kScale),
+            performanceConfig,
+          );
 
-          setTimeout(() => {
-            if ((window as any).LAppLive2DManager?.releaseInstance) {
-              (window as any).LAppLive2DManager.releaseInstance();
-            }
-            initializeLive2D();
-          }, 500);
+          if (needsUpdate) {
+            setTimeout(() => {
+              if ((window as any).LAppLive2DManager?.releaseInstance) {
+                (window as any).LAppLive2DManager.releaseInstance();
+              }
+              initializeLive2D();
+            }, 500);
+          }
         }
-      } catch (error) {
-        console.error('Error processing model URL:', error);
       }
+    } catch (error) {
+      console.error('Error processing model URL:', error);
     }
-  }, [modelInfo?.url, modelInfo?.kScale]);
+  }, [modelInfo?.url, modelInfo?.kScale, modelInfo?.renderScale, modelInfo?.frameRateLimit]);
 
   const getModelPosition = useCallback(() => {
     const adapter = (window as any).getLAppAdapter?.();

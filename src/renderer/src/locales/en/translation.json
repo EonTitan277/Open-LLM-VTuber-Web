@@ -34,7 +34,11 @@
     },
     "live2d": {
       "pointerInteractive": "Pointer Interactive",
-      "scrollToResize": "Enable Scroll to Resize"
+      "scrollToResize": "Enable Scroll to Resize",
+      "renderScale": "Render Scale",
+      "renderScaleHelp": "Scales the canvas backing resolution. Lower values reduce CPU/GPU cost during heavy load, but make the model slightly softer.",
+      "frameRateLimit": "Frame Rate Limit",
+      "frameRateLimitHelp": "Caps how often the Live2D renderer updates. 30 fps is usually a good low-power fallback while keeping motion smooth enough."
     },
     "asr": {
       "autoStopMic": "Auto Stop Mic When AI Start Speaking",

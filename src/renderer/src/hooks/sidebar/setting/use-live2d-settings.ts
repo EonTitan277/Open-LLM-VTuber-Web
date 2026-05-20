@@ -11,6 +11,8 @@ export const useLive2dSettings = () => {
     initialYshift: 0,
     emotionMap: {},
     scrollToResize: true,
+    renderScale: 1,
+    frameRateLimit: 60,
   };
 
   const [modelInfo, setModelInfoState] = useState<ModelInfo>(
@@ -33,7 +35,12 @@ export const useLive2dSettings = () => {
     if (Live2DConfigContext && modelInfo) {
       Live2DConfigContext.setModelInfo(modelInfo);
     }
-  }, [modelInfo.pointerInteractive, modelInfo.scrollToResize]);
+  }, [
+    modelInfo.pointerInteractive,
+    modelInfo.scrollToResize,
+    modelInfo.renderScale,
+    modelInfo.frameRateLimit,
+  ]);
 
   const handleInputChange = (key: keyof ModelInfo, value: ModelInfo[keyof ModelInfo]): void => {
     setModelInfoState((prev) => ({ ...prev, [key]: value }));

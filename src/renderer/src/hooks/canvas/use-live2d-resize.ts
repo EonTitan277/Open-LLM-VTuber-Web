@@ -87,7 +87,7 @@ export const useLive2DResize = ({
     });
 
     return () => cancelAnimationFrame(resizeHandle);
-  }, [modelInfo?.url, modelInfo?.kScale]);
+  }, [modelInfo?.url, modelInfo?.kScale, modelInfo?.renderScale]);
 
   /**
    * Smooth animation loop for scaling
@@ -192,7 +192,8 @@ export const useLive2DResize = ({
         return;
       }
 
-      const dpr = window.devicePixelRatio || 1;
+      const renderScale = Math.min(1, Math.max(0.25, modelInfo?.renderScale ?? 1));
+      const dpr = (window.devicePixelRatio || 1) * renderScale;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       canvas.style.width = `${width}px`;
@@ -209,7 +210,7 @@ export const useLive2DResize = ({
     } catch (error) {
       isResizingRef.current = false;
     }
-  }, [isPet, containerRef, modelInfo?.kScale, modelInfo?.initialXshift, modelInfo?.initialYshift, showSidebar, beforeResize, canvasRef]);
+  }, [isPet, containerRef, modelInfo?.kScale, modelInfo?.renderScale, modelInfo?.initialXshift, modelInfo?.initialYshift, showSidebar, beforeResize, canvasRef]);
 
   // Immediately respond to sidebar state changes
   useEffect(() => {

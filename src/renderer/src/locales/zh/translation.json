@@ -32,7 +32,11 @@
     },
     "live2d": {
       "pointerInteractive": "鼠标交互",
-      "scrollToResize": "启用滚轮缩放"
+      "scrollToResize": "启用滚轮缩放",
+      "renderScale": "渲染缩放",
+      "renderScaleHelp": "缩放画布的内部渲染分辨率。数值越低，CPU/GPU压力越小，但模型会稍微更模糊。",
+      "frameRateLimit": "帧率限制",
+      "frameRateLimitHelp": "限制 Live2D 的刷新频率。30 fps 通常是一个不错的低负载方案，同时还能保持较平滑的动画。"
     },
     "asr": {
       "autoStopMic": "AI开始说话时自动关闭麦克风",

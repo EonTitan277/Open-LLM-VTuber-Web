@@ -33,18 +33,35 @@ export const ViewLogicalMaxTop = 2.0;
 // Dynamic resource path that will be set by the model loader
 export let ResourcesPath = "";
 
+export interface Live2DPerformanceConfig {
+  renderScale?: number;
+  limitedFrameRate?: number;
+}
+
 // Model directory and filename storage
 export let ModelDir: string[] = [];
 export let ModelFileNames: string[] = []; // New array to store model file names
 
 // Function to update model configuration with both directory and file name
-export function updateModelConfig(resourcePath: string, modelDirectory: string, modelFileName: string, kScale?: number) {
-  console.log('Updating model config:', { resourcePath, modelDirectory, modelFileName, kScale });
+export function updateModelConfig(
+  resourcePath: string,
+  modelDirectory: string,
+  modelFileName: string,
+  kScale?: number,
+  performance?: Live2DPerformanceConfig,
+) {
+  console.log('Updating model config:', { resourcePath, modelDirectory, modelFileName, kScale, performance });
   ResourcesPath = resourcePath;
   ModelDir = [modelDirectory];
   ModelFileNames = [modelFileName]; // Store the actual model file name
   if (kScale !== undefined) {
     CurrentKScale = kScale;
+  }
+  if (performance?.renderScale !== undefined) {
+    RenderScale = Math.min(1, Math.max(0.25, performance.renderScale));
+  }
+  if (performance?.limitedFrameRate !== undefined) {
+    LIMITED_FRAME_RATE = Math.min(60, Math.max(15, performance.limitedFrameRate));
   }
   // Update ModelDirSize when ModelDir changes
   ModelDirSize = ModelDir.length;
@@ -102,4 +119,5 @@ export const RenderTargetWidth = 1900;
 export const RenderTargetHeight = 1000;
 
 export const ENABLE_LIMITED_FRAME_RATE = true;
-export const LIMITED_FRAME_RATE = 60;
+export let LIMITED_FRAME_RATE = 60;
+export let RenderScale = 1;
