@@ -24,6 +24,7 @@ import { ScreenCaptureProvider } from "./context/screen-capture-context";
 import { GroupProvider } from "./context/group-context";
 import { BrowserProvider } from "./context/browser-context";
 import { useMicShortcutRegistration } from "./hooks/utils/use-mic-shortcut-registration";
+import { useProactiveSpeakShortcutRegistration } from "./hooks/utils/use-proactive-speak-shortcut-registration";
 // eslint-disable-next-line import/no-extraneous-dependencies, import/newline-after-import
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import Background from "./components/canvas/background";
@@ -38,6 +39,7 @@ function AppContent(): JSX.Element {
   const isElectron = window.api !== undefined;
   const live2dContainerRef = useRef<HTMLDivElement>(null);
   useMicShortcutRegistration();
+  useProactiveSpeakShortcutRegistration();
 
   useEffect(() => {
     const handleResize = () => {
@@ -49,15 +51,14 @@ function AppContent(): JSX.Element {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-    
-  document.documentElement.style.overflow = 'hidden';
-  document.body.style.overflow = 'hidden';
-  document.documentElement.style.height = '100%';
-  document.body.style.height = '100%';
-  document.documentElement.style.position = 'fixed';
-  document.body.style.position = 'fixed';
-  document.documentElement.style.width = '100%';
-  document.body.style.width = '100%';
+  document.documentElement.style.overflow = "hidden";
+  document.body.style.overflow = "hidden";
+  document.documentElement.style.height = "100%";
+  document.body.style.height = "100%";
+  document.documentElement.style.position = "fixed";
+  document.body.style.position = "fixed";
+  document.documentElement.style.width = "100%";
+  document.body.style.width = "100%";
 
   // Define base style properties shared across modes/breakpoints
   const live2dBaseStyle = {

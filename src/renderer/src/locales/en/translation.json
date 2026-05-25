@@ -60,7 +60,12 @@
     "agent": {
       "allowProactiveSpeak": "Allow AI to Speak Proactively",
       "idleSecondsToSpeak": "Idle seconds allow AI to speak",
-      "allowButtonTrigger": "Prompt AI to Speak via Raise Hand Button"
+      "allowButtonTrigger": "Prompt AI to Speak via Raise Hand Button",
+      "proactiveSpeakShortcut": "Proactive Speak Toggle Shortcut",
+      "proactiveSpeakShortcutPlaceholder": "Press a shortcut",
+      "proactiveSpeakShortcutHelp": "Press one main key with up to 3 modifiers. Backspace or Delete clears the shortcut. This toggles whether the AI can speak proactively when idle.",
+      "proactiveSpeakShortcutConflict": "This shortcut conflicts with the microphone toggle shortcut.",
+      "proactiveSpeakShortcutOsConflict": "Shortcut already in use by another application."
     },
     "about": {
       "title": "Open LLM VTuber Frontend",

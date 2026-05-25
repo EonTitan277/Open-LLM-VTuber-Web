@@ -4,9 +4,11 @@ import { useMicToggle } from "./use-mic-toggle";
 import { useLive2DConfig } from "@/context/live2d-config-context";
 import { useSwitchCharacter } from "@/hooks/utils/use-switch-character";
 import { useForceIgnoreMouse } from "@/hooks/utils/use-force-ignore-mouse";
+import { useProactiveSpeakToggle } from "@/hooks/utils/use-proactive-speak-toggle";
 
 export function useIpcHandlers() {
   const { handleMicToggle } = useMicToggle();
+  const { handleProactiveSpeakToggle } = useProactiveSpeakToggle();
   const { interrupt } = useInterrupt();
   const { modelInfo, setModelInfo } = useLive2DConfig();
   const { switchCharacter } = useSwitchCharacter();
@@ -15,6 +17,10 @@ export function useIpcHandlers() {
   const micToggleHandler = useCallback(() => {
     handleMicToggle();
   }, [handleMicToggle]);
+
+  const proactiveSpeakToggleHandler = useCallback(() => {
+    handleProactiveSpeakToggle();
+  }, [handleProactiveSpeakToggle]);
 
   const interruptHandler = useCallback(() => {
     interrupt();
@@ -54,13 +60,20 @@ export function useIpcHandlers() {
     if (!window.electron?.ipcRenderer) return;
 
     window.electron.ipcRenderer.removeAllListeners("mic-toggle");
+    window.electron.ipcRenderer.removeAllListeners("proactive-speak-toggle");
     window.electron.ipcRenderer.removeAllListeners("interrupt");
     window.electron.ipcRenderer.removeAllListeners("toggle-scroll-to-resize");
     window.electron.ipcRenderer.removeAllListeners("switch-character");
     window.electron.ipcRenderer.removeAllListeners("toggle-force-ignore-mouse");
-    window.electron.ipcRenderer.removeAllListeners("force-ignore-mouse-changed");
+    window.electron.ipcRenderer.removeAllListeners(
+      "force-ignore-mouse-changed",
+    );
 
     window.electron.ipcRenderer.on("mic-toggle", micToggleHandler);
+    window.electron.ipcRenderer.on(
+      "proactive-speak-toggle",
+      proactiveSpeakToggleHandler,
+    );
     window.electron.ipcRenderer.on("interrupt", interruptHandler);
     window.electron.ipcRenderer.on(
       "toggle-scroll-to-resize",
@@ -78,16 +91,22 @@ export function useIpcHandlers() {
 
     return () => {
       window.electron?.ipcRenderer.removeAllListeners("mic-toggle");
+      window.electron?.ipcRenderer.removeAllListeners("proactive-speak-toggle");
       window.electron?.ipcRenderer.removeAllListeners("interrupt");
       window.electron?.ipcRenderer.removeAllListeners(
         "toggle-scroll-to-resize",
       );
       window.electron?.ipcRenderer.removeAllListeners("switch-character");
-      window.electron?.ipcRenderer.removeAllListeners("toggle-force-ignore-mouse");
-      window.electron?.ipcRenderer.removeAllListeners("force-ignore-mouse-changed");
+      window.electron?.ipcRenderer.removeAllListeners(
+        "toggle-force-ignore-mouse",
+      );
+      window.electron?.ipcRenderer.removeAllListeners(
+        "force-ignore-mouse-changed",
+      );
     };
   }, [
     micToggleHandler,
+    proactiveSpeakToggleHandler,
     interruptHandler,
     scrollToResizeHandler,
     switchCharacterHandler,

@@ -1,70 +1,72 @@
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 
-export const MIC_TOGGLE_SHORTCUT_KEY = 'appMicToggleShortcut';
+export const MIC_TOGGLE_SHORTCUT_KEY = "appMicToggleShortcut";
+export const PROACTIVE_SPEAK_TOGGLE_SHORTCUT_KEY =
+  "appProactiveSpeakToggleShortcut";
 
-const MODIFIER_KEYS = new Set(['Control', 'Alt', 'Shift', 'Meta']);
+const MODIFIER_KEYS = new Set(["Control", "Alt", "Shift", "Meta"]);
 
 const MAIN_CODE_MAP: Record<string, string> = {
-  Space: 'Space',
-  Enter: 'Enter',
-  Tab: 'Tab',
-  Escape: 'Esc',
-  Backspace: 'Backspace',
-  Delete: 'Delete',
-  ArrowUp: 'Up',
-  ArrowDown: 'Down',
-  ArrowLeft: 'Left',
-  ArrowRight: 'Right',
-  Home: 'Home',
-  End: 'End',
-  PageUp: 'PageUp',
-  PageDown: 'PageDown',
-  Insert: 'Insert',
-  CapsLock: 'CapsLock',
-  Minus: '-',
-  Equal: '=',
-  BracketLeft: '[',
-  BracketRight: ']',
-  Backslash: '\\',
-  Semicolon: ';',
-  Quote: '\'',
-  Comma: ',',
-  Period: '.',
-  Slash: '/',
-  Backquote: '`',
+  Space: "Space",
+  Enter: "Enter",
+  Tab: "Tab",
+  Escape: "Esc",
+  Backspace: "Backspace",
+  Delete: "Delete",
+  ArrowUp: "Up",
+  ArrowDown: "Down",
+  ArrowLeft: "Left",
+  ArrowRight: "Right",
+  Home: "Home",
+  End: "End",
+  PageUp: "PageUp",
+  PageDown: "PageDown",
+  Insert: "Insert",
+  CapsLock: "CapsLock",
+  Minus: "-",
+  Equal: "=",
+  BracketLeft: "[",
+  BracketRight: "]",
+  Backslash: "\\",
+  Semicolon: ";",
+  Quote: "'",
+  Comma: ",",
+  Period: ".",
+  Slash: "/",
+  Backquote: "`",
 };
 
 const MAIN_KEY_MAP: Record<string, string> = {
-  ' ': 'Space',
-  Escape: 'Esc',
-  Enter: 'Enter',
-  Tab: 'Tab',
-  Backspace: 'Backspace',
-  Delete: 'Delete',
-  ArrowUp: 'Up',
-  ArrowDown: 'Down',
-  ArrowLeft: 'Left',
-  ArrowRight: 'Right',
-  Home: 'Home',
-  End: 'End',
-  PageUp: 'PageUp',
-  PageDown: 'PageDown',
-  Insert: 'Insert',
-  CapsLock: 'CapsLock',
+  " ": "Space",
+  Escape: "Esc",
+  Enter: "Enter",
+  Tab: "Tab",
+  Backspace: "Backspace",
+  Delete: "Delete",
+  ArrowUp: "Up",
+  ArrowDown: "Down",
+  ArrowLeft: "Left",
+  ArrowRight: "Right",
+  Home: "Home",
+  End: "End",
+  PageUp: "PageUp",
+  PageDown: "PageDown",
+  Insert: "Insert",
+  CapsLock: "CapsLock",
 };
 
 const normalizeMainKey = (
   event: ReactKeyboardEvent<HTMLInputElement>,
 ): string | null => {
-  if (event.code.startsWith('Key')) {
+  if (event.code.startsWith("Key")) {
     return event.code.slice(3);
   }
 
-  if (event.code.startsWith('Digit')) {
+  if (event.code.startsWith("Digit")) {
     return event.code.slice(5);
   }
 
-  if (event.code.startsWith('Numpad')) {
+  if (event.code.startsWith("Numpad")) {
     return event.code.slice(6);
   }
 
@@ -91,10 +93,23 @@ const normalizeMainKey = (
 
 export const loadInitialMicShortcut = (): string => {
   try {
-    return window.localStorage.getItem(MIC_TOGGLE_SHORTCUT_KEY)?.trim() ?? '';
+    return window.localStorage.getItem(MIC_TOGGLE_SHORTCUT_KEY)?.trim() ?? "";
   } catch (error) {
-    console.error('Failed to load microphone shortcut:', error);
-    return '';
+    console.error("Failed to load microphone shortcut:", error);
+    return "";
+  }
+};
+
+export const loadInitialProactiveSpeakShortcut = (): string => {
+  try {
+    return (
+      window.localStorage
+        .getItem(PROACTIVE_SPEAK_TOGGLE_SHORTCUT_KEY)
+        ?.trim() ?? ""
+    );
+  } catch (error) {
+    console.error("Failed to load proactive speak shortcut:", error);
+    return "";
   }
 };
 
@@ -112,18 +127,18 @@ export const getShortcutFromKeyboardEvent = (
 
   const modifiers: string[] = [];
   if (event.ctrlKey || event.metaKey) {
-    modifiers.push('CommandOrControl');
+    modifiers.push("CommandOrControl");
   }
   if (event.altKey) {
-    modifiers.push('Alt');
+    modifiers.push("Alt");
   }
   if (event.shiftKey) {
-    modifiers.push('Shift');
+    modifiers.push("Shift");
   }
 
   if (modifiers.length > 3) {
     return null;
   }
 
-  return [...modifiers, mainKey].join('+');
+  return [...modifiers, mainKey].join("+");
 };

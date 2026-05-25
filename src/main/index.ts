@@ -1,5 +1,11 @@
 /* eslint-disable no-shadow */
-import { app, ipcMain, globalShortcut, desktopCapturer, BrowserWindow } from "electron";
+import {
+  app,
+  ipcMain,
+  globalShortcut,
+  desktopCapturer,
+  BrowserWindow,
+} from "electron";
 import { electronApp, optimizer } from "@electron-toolkit/utils";
 import { WindowManager } from "./window-manager";
 import { MenuManager } from "./menu-manager";
@@ -7,18 +13,32 @@ import { MenuManager } from "./menu-manager";
 let windowManager: WindowManager;
 let menuManager: MenuManager;
 let isQuitting = false;
-let registeredMicShortcut = '';
+let registeredMicShortcut = "";
+let registeredProactiveSpeakShortcut = "";
 
 function sendMicToggleToRenderer(): void {
   const window = windowManager.getWindow();
   if (window) {
-    window.webContents.send('mic-toggle');
+    window.webContents.send("mic-toggle");
     return;
   }
 
   const windows = BrowserWindow.getAllWindows();
   windows.forEach((browserWindow) => {
-    browserWindow.webContents.send('mic-toggle');
+    browserWindow.webContents.send("mic-toggle");
+  });
+}
+
+function sendProactiveSpeakToggleToRenderer(): void {
+  const window = windowManager.getWindow();
+  if (window) {
+    window.webContents.send("proactive-speak-toggle");
+    return;
+  }
+
+  const windows = BrowserWindow.getAllWindows();
+  windows.forEach((browserWindow) => {
+    browserWindow.webContents.send("proactive-speak-toggle");
   });
 }
 
@@ -34,13 +54,16 @@ function registerMicShortcut(shortcut: string): boolean {
     globalShortcut.unregister(previousShortcut);
   }
 
-  registeredMicShortcut = '';
+  registeredMicShortcut = "";
 
   if (!nextShortcut) {
     return true;
   }
 
-  const registered = globalShortcut.register(nextShortcut, sendMicToggleToRenderer);
+  const registered = globalShortcut.register(
+    nextShortcut,
+    sendMicToggleToRenderer,
+  );
   if (registered) {
     registeredMicShortcut = nextShortcut;
     return true;
@@ -49,9 +72,54 @@ function registerMicShortcut(shortcut: string): boolean {
   console.warn(`Failed to register mic shortcut: ${nextShortcut}`);
 
   if (previousShortcut) {
-    const restored = globalShortcut.register(previousShortcut, sendMicToggleToRenderer);
+    const restored = globalShortcut.register(
+      previousShortcut,
+      sendMicToggleToRenderer,
+    );
     if (restored) {
       registeredMicShortcut = previousShortcut;
+    }
+  }
+
+  return false;
+}
+
+function registerProactiveSpeakShortcut(shortcut: string): boolean {
+  const nextShortcut = shortcut.trim();
+  const previousShortcut = registeredProactiveSpeakShortcut;
+
+  if (nextShortcut === previousShortcut) {
+    return true;
+  }
+
+  if (previousShortcut) {
+    globalShortcut.unregister(previousShortcut);
+  }
+
+  registeredProactiveSpeakShortcut = "";
+
+  if (!nextShortcut) {
+    return true;
+  }
+
+  const registered = globalShortcut.register(
+    nextShortcut,
+    sendProactiveSpeakToggleToRenderer,
+  );
+  if (registered) {
+    registeredProactiveSpeakShortcut = nextShortcut;
+    return true;
+  }
+
+  console.warn(`Failed to register proactive speak shortcut: ${nextShortcut}`);
+
+  if (previousShortcut) {
+    const restored = globalShortcut.register(
+      previousShortcut,
+      sendProactiveSpeakToggleToRenderer,
+    );
+    if (restored) {
+      registeredProactiveSpeakShortcut = previousShortcut;
     }
   }
 
@@ -73,7 +141,7 @@ function setupIPC(): void {
   });
 
   ipcMain.on("pre-mode-changed", (_event, newMode) => {
-    if (newMode === 'window' || newMode === 'pet') {
+    if (newMode === "window" || newMode === "pet") {
       menuManager.setMode(newMode);
     }
   });
@@ -117,19 +185,33 @@ function setupIPC(): void {
     menuManager.updateConfigFiles(files);
   });
 
-  ipcMain.handle('get-screen-capture', async () => {
-    const sources = await desktopCapturer.getSources({ types: ['screen'] });
+  ipcMain.handle("get-screen-capture", async () => {
+    const sources = await desktopCapturer.getSources({ types: ["screen"] });
     return sources[0].id;
   });
 
-  ipcMain.handle('register-mic-shortcut', (_event, shortcut: string) => {
+  ipcMain.handle("register-mic-shortcut", (_event, shortcut: string) => {
     return registerMicShortcut(shortcut);
   });
 
-  ipcMain.handle('unregister-mic-shortcut', () => {
+  ipcMain.handle("unregister-mic-shortcut", () => {
     if (registeredMicShortcut) {
       globalShortcut.unregister(registeredMicShortcut);
-      registeredMicShortcut = '';
+      registeredMicShortcut = "";
+    }
+  });
+
+  ipcMain.handle(
+    "register-proactive-speak-shortcut",
+    (_event, shortcut: string) => {
+      return registerProactiveSpeakShortcut(shortcut);
+    },
+  );
+
+  ipcMain.handle("unregister-proactive-speak-shortcut", () => {
+    if (registeredProactiveSpeakShortcut) {
+      globalShortcut.unregister(registeredProactiveSpeakShortcut);
+      registeredProactiveSpeakShortcut = "";
     }
   });
 }
@@ -183,14 +265,16 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  app.on('web-contents-created', (_, contents) => {
-    contents.session.setPermissionRequestHandler((webContents, permission, callback) => {
-      if (permission === 'media') {
-        callback(true);
-      } else {
-        callback(false);
-      }
-    });
+  app.on("web-contents-created", (_, contents) => {
+    contents.session.setPermissionRequestHandler(
+      (webContents, permission, callback) => {
+        if (permission === "media") {
+          callback(true);
+        } else {
+          callback(false);
+        }
+      },
+    );
   });
 });
 
